@@ -1,0 +1,361 @@
+USE [Lakshya]
+GO
+/****** Object:  StoredProcedure [cdgmaster].[keydataW]    Script Date: 10/30/2019 4:47:48 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER procedure [cdgmaster].[keydataW]
+as
+--V20191011
+/*
+28 Nov 2014 Rizvi    Changed as per RDR-007 Issues and fixes
+04 Dec 2014 Rizvi    Changed table from customer to customer_retailer
+*/
+declare @fromdate varchar(10) 
+declare @todate varchar(10)
+declare @strsql varchar(6000)
+declare @appname varchar(50)
+declare @custid varchar(10)
+declare @sapid varchar(10)
+declare @weekday int
+declare @rtrid varchar(100)
+declare @schid int
+declare @cfi varchar(1)
+declare @cfd varchar(1)
+
+--RDR-007
+declare @fromdateDt dateTime 
+declare @todateDt dateTime
+--RDR-007
+
+if (datepart(dw,convert(datetime,getdate()))=7)
+begin
+set @fromdate=convert(varchar(10),DATEADD(dd, -(DATEPART(dw, convert(datetime,getdate()))-1), convert(datetime,getdate())),120)
+set @todate=convert(varchar(10),DATEADD(dd, 7-(DATEPART(dw,convert(datetime,getdate()))), convert(datetime,getdate())),120)
+end
+else
+begin
+set @fromdate=CONVERT(VARCHAR(10),dateadd(d,2-datepart(dw,convert(datetime,getdate())-7),convert(datetime,getdate())-8),120)
+set @todate=CONVERT(VARCHAR(10),dateadd(d,8-datepart(dw,convert(datetime,getdate())-7),convert(datetime,getdate())-8),120)
+end
+
+--RDR-007
+select @fromdateDt = convert(dateTime, @fromdate, 120)
+select @todateDt = convert(dateTime, @todate, 120)
+--RDR-007
+
+set @weekday=cast(datename(week,@fromdate) as int)- cast( datename(week,dateadd(dd,1-day(@fromdate),@fromdate)) as int)+1
+
+begin
+
+delete from  Lakshya.cdgmaster.keyweekdata where fromdate=@fromdate and todate=@todate
+delete  from Lakshya.cdgmaster.Keyweekschedulardate where fromdate=@fromdate and todate=@todate
+delete  from  Lakshya.cdgmaster.ControlReportKeyWeek  where fromdate=@fromdate and todate=@todate
+delete from Lakshya.cdgmaster.Smsdatareportdetails where fromdate=@fromdate and todate=@todate
+delete from Lakshya.cdgmaster.Smsdatareportheader
+--To know Schedule run date----
+set @strsql='Insert into cdgmaster.Keyweekschedulardate values( ''' + @fromdate + ''',''' + @Todate + ''',getdate())'
+exec (@strsql)
+--schid
+select top 1 @schid=schid from Lakshya.cdgmaster.Keyweekschedulardate with(nolock)  order by schid desc
+-----
+----weekly direct data---
+
+--declare sapcust cursor for
+---Fetch Distributor Sapid from Lakshya.keyaccount application---- 
+--select distinct Distributorsapid as f,wholesalercode as g,Isconfirm from Lakshya.cdgmaster.customer_Retailer where (Wholesalercode is not null and Wholesalercode<>'') and (Distributorsapid is not null and Distributorsapid<>'') and Nkacstores='Y'
+--open sapcust
+--Fetch next from sapcust into  @custid,@rtrid,@cfi
+
+--While(@@FETCH_STATUS=0)  
+begin
+---week Sales data----
+---from Lakshya customer_Retailer master
+
+insert into keyweekdata 
+select t.Distcode as Distributorcode, t.SalInvNo as INVNO,convert(varchar,convert(datetime,t.SalInvDate),120) as INVDATE,1 as DLVSTS,
+t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductCode as Prdid,ProductCode as prdCcde,w.ProductName as Prdnm,t.PrdQty as Salinvqty,
+t.PrdSelRateBeforeTax as JNJSALINVRATE,W.MotherSKUCode as Prdctgid,W.MOTHERSKUName as PRDCTGDSC ,o.RetlrGroupCode as ctgtypid,
+o.RetlrGroupCode as ctgtypdsc,1 as dlvsts,t.PrdTaxAmt as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,salwdsamt,0,@schid,t.createddate,
+@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+--cdgmaster.f_pf_getNR(ISNULL(t.MRP,0), t.salINvdate, r.sapid, p.stateCode,'N'),
+isnull(t.NRValue,0),
+--RDR-007
+'IS',@weekday,case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end,0  from test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Dailysales as t with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode 
+inner join Lakshya.cdgmaster.customer_Retailer as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on t.PrdCode=w.ProductCode 
+inner join Lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid 
+ where (Wholesalercode is not null and Wholesalercode<>'') and p.isActive='Y'
+ and (Distributorsapid is not null and Distributorsapid<>'') 
+ and Nkacstores='Y'and t.salinvdate between @fromdate and @todate 
+ order by t.Distcode,t.salinvdate
+---from Lakshya customer_Retailer master
+
+---from Lakshya customer temp table
+insert into keyweekdata select t.Distcode as Distributorcode, t.SalInvNo as INVNO,convert(varchar,convert(datetime,t.SalInvDate),120) as INVDATE,
+1 as DLVSTS,t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductCode as Prdid,ProductCode as prdCcde,w.ProductName as Prdnm,t.PrdQty as Salinvqty,
+t.PrdSelRateBeforeTax as JNJSALINVRATE,W.MotherSKUCode as Prdctgid,W.MOTHERSKUName as PRDCTGDSC ,o.RetlrGroupCode as ctgtypid,
+o.RetlrGroupCode as ctgtypdsc,1 as dlvsts,t.PrdTaxAmt as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,salwdsamt,0,@schid,
+t.createddate,@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+--cdgmaster.f_pf_getNR(ISNULL(t.MRP,0), t.salINvdate, r.sapid, p.stateCode,'N'),
+isnull(t.NRValue,0),
+--RDR-007
+'IS',@weekday,Isconfirm,0  
+from test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Dailysales as t with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode 
+inner join Lakshya.cdgmaster.customer_retailer_transfer_temp as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on t.PrdCode=w.ProductCode 
+inner join Lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid 
+ where (Wholesalercode is not null and Wholesalercode<>'') and (Distributorsapid is not null and Distributorsapid<>'') 
+ and t.salinvdate between @fromdate and @todate 
+ order by t.Distcode,t.salinvdate
+---from Lakshya customer temp table
+
+
+
+
+
+
+update Lakshya.cdgmaster.keyweekdata set  salwdsamt=0 where keyaccountid not in (
+select min(keyaccountid)as a from Lakshya.cdgmaster.keyweekdata with(nolock) where salinvno in(select salinvno from Lakshya.cdgmaster.keyweekdata with(nolock) group by distributorcode,salinvno having count(salinvno)>1)
+ and distributorcode in(select distributorcode from Lakshya.cdgmaster.keyweekdata with(nolock)) group by distributorcode,salinvno )
+and salinvno in(select salinvno from Lakshya.cdgmaster.keyweekdata with(nolock) group by distributorcode,salinvno having count(salinvno)>1)
+ and distributorcode in(select distributorcode from Lakshya.cdgmaster.keyweekdata with(nolock))
+
+
+--update Lakshya.cdgmaster.keyweekdata  set schid=y.schid from Lakshya.cdgmaster.Keymonthschedulardate as y where rundate= '2010-08-31' 
+---control Report----
+ 
+--Fetch next from sapcust into  @custid,@rtrid,@cfi   
+end     
+--close sapcust    
+--deallocate sapcust  
+-------wekkely direct data------
+
+----direct Sales------
+
+--declare sapdirect cursor for
+---Fetch Distributor Sapid from Lakshya.keyaccount application---- 
+--select distinct sapid,Isconfirm  from Lakshya.cdgmaster.customer_Retailer where isdirectacct='Y' and Nkacstores='Y' and (sapid is not null and sapid<>'')
+
+
+--open sapdirect
+--Fetch next from sapdirect into @sapid,@cfd
+
+
+--While(@@FETCH_STATUS=0)  
+begin
+---Month Sales data----
+/*insert into keyweekdata(distributorcode,salinvno,salinvdate,prdccode,productname,prdqty,prdtaxamt,Discount,schid,fromdate,todate,netrate,
+saleflag,weekno,confirmsales,subTotal4) 
+select a.distributorcode,convert(varchar(10),convert(numeric(10,0),invoicenumber)),
+convert(varchar,convert(datetime,isnull(invdate,invoicedate)),120),productcode,skudesc,(case when a.uom='PC' then cast(round(qty,0)as integer) when a.uom='DZ' then cast(round(qty*12,0) as integer) else cast(round(qty*convrcnratio,0)as integer) end),
+Tax,Discount,@schid,@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+case when a.qty = 0 then 0 
+	else a.subTotal4/(
+		a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+			(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+			 where skuId= a.productcode and unitID2='PC' and unitID1=a.uom)
+		 end),1) ) end,
+--RDR-007
+'DS',@weekday,case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end, [subTotal4] 
+from cdgmaster.purchasefinal as a with(nolock) 
+left join cdgmaster.customer_Retailer as b with(nolock) on a.distributorcode=b.sapid 
+left join Lakshya.cdgmaster.sku as c with(nolock) on a.productcode=c.sapid 
+left join (select distinct skuid,unitid1,convrcnratio 
+from Lakshya.cdgmaster.SKUUnitConvrsnDtl with(nolock)) as d on c.sapid=d.skuid and a.uom=d.unitid1 
+where isnull(invdate,invoicedate) between replace(convert(varchar,@fromdate,120),'-','') 
+and replace(convert(varchar,@todate,120),'-','') and isdirectacct='Y' and Nkacstores='Y' and (b.sapid is not null and b.sapid<>'')
+and a.BillT = 'ZF2D' */
+
+
+insert into keyweekdata(distributorcode,salinvno,salinvdate,prdccode,productname,prdqty,prdtaxamt,Discount,schid,fromdate,todate,netrate,
+saleflag,weekno,confirmsales,subTotal4) 
+select a.distributorcode,convert(varchar(10),convert(numeric(10,0),invoicenumber)),
+convert(varchar,convert(datetime,isnull(invdate,invoicedate)),120),productcode,skudesc,
+case a.BillT when 'S1' then -1 * (case when a.uom='PC' then cast(round(qty,0)as integer) when a.uom='DZ' then cast(round(qty*12,0) as integer) else cast(round(qty*convrcnratio,0)as integer) end) 
+else (case when a.uom='PC' then cast(round(qty,0)as integer) when a.uom='DZ' then cast(round(qty*12,0) as integer) else cast(round(qty*convrcnratio,0)as integer) end) end
+,case a.BillT when 'S1' then -1 * Tax else tax end  
+,Discount,@schid,@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+case when a.qty = 0 then 0 
+	else a.subTotal4/(
+		a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+			(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+			 where skuId= a.productcode and unitID2='PC' and unitID1=a.uom)
+		 end),1) ) end,
+--RDR-007
+'DS',@weekday,case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end, case a.BillT when 'S1' then -1* [subTotal4] else [subTotal4] end 
+from cdgmaster.purchasefinal as a with(nolock) 
+left join cdgmaster.customer_Retailer as b with(nolock) on a.distributorcode=b.sapid 
+left join Lakshya.cdgmaster.sku as c with(nolock) on a.productcode=c.sapid 
+left join (select distinct skuid,unitid1,convrcnratio 
+from Lakshya.cdgmaster.SKUUnitConvrsnDtl with(nolock)) as d on c.sapid=d.skuid and a.uom=d.unitid1 
+where isnull(invdate,invoicedate) between replace(convert(varchar,@fromdate,120),'-','') 
+and replace(convert(varchar,@todate,120),'-','') and isdirectacct='Y' and Nkacstores='Y' and (b.sapid is not null and b.sapid<>'')
+and a.BillT  in ('ZF2D','ZL2D', 'ZL22','S1')
+
+--Fetch next from sapdirect into @sapid,@cfd 
+end     
+--close sapdirect    
+--deallocate sapdirect
+----direct sales-----
+
+--RDR-007
+---------------- returns ----------------
+
+/*insert into keyweekdata(distributorcode,salinvno,salinvdate,productId,prdccode,productname,prdqty
+,prdtaxamt,Discount,schid,fromdate,todate,netrate,saleflag,weekno,confirmsales, subTotal4) 
+select a.distributorcode,convert(varchar(10),convert(numeric(10,0),a.invoicenumber)), 
+convert(datetime,a.invoicedate,120),w.ProductId, a.productcode, c.skudesc
+, -1 * a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+	(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+     where skuId= a.productcode  and unitID2='PC' and unitID1=a.uom)
+ end),1)  ----- returns quantity inserted here with sign changed
+,-1 *tax, 0 discount, @schid,@fromdate,@todate, case when a.qty = 0 then 0 
+	else a.subTotal4/(
+		a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+			(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+			 where skuId= a.productcode and unitID2='PC' and unitID1=a.uom)
+		 end),1) ) end
+,'G2',@weekday, case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end,-1*[subTotal4]
+from cdgmaster.purchasefinal as a with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on w.ProductCode=a.ProductCode
+left join cdgmaster.customer_Retailer as b with(nolock) on a.distributorcode =b.sapid 
+left join Lakshya.cdgmaster.sku as c with(nolock) on a.ProductCode=c.sapid 
+--left join (select distinct skuid,unitid1,convrcnratio from Lakshya.cdgmaster.SKUUnitConvrsnDtl with(nolock)) as d on c.sapid=d.skuid and a.uom=d.unitid1 
+where a.BillT = 'ZG2D' 
+and convert(varchar(10),convert(datetime,a.invoicedate,120),120) between @fromdateDt and @todateDt
+and b.isdirectacct='Y' and b.Nkacstores='Y' and (b.sapid is not null and b.sapid<>'') */
+
+insert into keyweekdata(distributorcode,salinvno,salinvdate,productId,prdccode,productname,prdqty
+,prdtaxamt,Discount,schid,fromdate,todate,netrate,saleflag,weekno,confirmsales, subTotal4) 
+select a.distributorcode,convert(varchar(10),convert(numeric(10,0),a.invoicenumber)), 
+convert(datetime,a.invoicedate,120),w.ProductCode, a.productcode, c.skudesc
+,case a.BillT when 'S2' then a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+	(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+     where skuId= a.productcode  and unitID2='PC' and unitID1=a.uom)
+ end),1)  else -1 * a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+	(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+     where skuId= a.productcode  and unitID2='PC' and unitID1=a.uom)
+ end),1) end  ----- returns quantity inserted here with sign changed
+,case a.BillT when 'S2' then tax else -1 *tax end , 0 discount, @schid,@fromdate,@todate, case when a.qty = 0 then 0 
+	else a.subTotal4/(
+		a.Qty * isnull((case a.uom when 'PC' then 1.0 else 
+			(select top 1 convrcnRatio from cdgmaster.SKUUnitConvrsnDtl 
+			 where skuId= a.productcode and unitID2='PC' and unitID1=a.uom)
+		 end),1) ) end
+,'G2',@weekday, case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end,case a.BillT when 'S2' then [subTotal4] else -1*[subTotal4] end
+from cdgmaster.purchasefinal as a with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on w.ProductCode=a.ProductCode
+left join cdgmaster.customer_Retailer as b with(nolock) on a.distributorcode =b.sapid 
+left join Lakshya.cdgmaster.sku as c with(nolock) on a.ProductCode=c.sapid 
+--left join (select distinct skuid,unitid1,convrcnratio from Lakshya.cdgmaster.SKUUnitConvrsnDtl with(nolock)) as d on c.sapid=d.skuid and a.uom=d.unitid1 
+where a.BillT in ('ZG2D','ZC2D','ZG22','ZC22','S2') 
+and convert(varchar(10),convert(datetime,a.invoicedate,120),120) between @fromdateDt and @todateDt
+and b.isdirectacct='Y' and b.Nkacstores='Y' and (b.sapid is not null and b.sapid<>'')
+
+--RDR-007
+
+--Sales retrun data
+
+insert into keyweekdata 
+select t.Distcode as Distributorcode, t.SRNRefNo as INVNO,convert(varchar,convert(datetime,t.SRNDate),120) as INVDATE,1 as DLVSTS,
+t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductCode as Prdid,ProductCode as prdCcde,w.ProductName as Prdnm,-1 * (isnull(t.PrdSalQty,0) + isnull(t.PrdUnSalQty,0)) as Salinvqty,
+t.PrdTaxAmt as JNJSALINVRATE,W.MotherSKUCode as Prdctgid,W.MOTHERSKUName as PRDCTGDSC ,o.RetlrGroupCode as ctgtypid,
+o.RetlrGroupCode as ctgtypdsc,1 as dlvsts,-1 * (t.PrdTaxAmt) as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,0 salwdsamt,0,@schid,t.createddate,
+@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+--cdgmaster.f_pf_getNR(ISNULL(t.MRP,0), t.salINvdate, r.sapid, p.stateCode,'N'),
+isnull(t.NRValue,0),
+--RDR-007
+'IR',@weekday,case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end,0  
+from test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.SalesReturn as t with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode 
+inner join Lakshya.cdgmaster.customer_Retailer as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on t.PrdCode=w.ProductCode 
+inner join Lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid 
+ where (Wholesalercode is not null and Wholesalercode<>'') and p.isActive='Y' and  (Distributorsapid is not null and Distributorsapid<>'') 
+ and Nkacstores='Y'and t.SRNDate between @fromdate and @todate 
+ order by t.Distcode,t.SRNDate
+---from Lakshya customer_Retailer master
+
+---from Lakshya customer temp table
+insert into keyweekdata select t.Distcode as Distributorcode, t.SRNRefNo as INVNO,convert(varchar,convert(datetime,t.SRNDate),120) as INVDATE,
+1 as DLVSTS,t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductCode as Prdid,ProductCode as prdCcde,w.ProductName as Prdnm,
+-1 * (isnull(t.PrdSalQty,0) + isnull(t.PrdUnSalQty,0)) as Salinvqty,
+t.PrdTaxAmt as JNJSALINVRATE,W.MotherSKUCode as Prdctgid,W.MOTHERSKUName as PRDCTGDSC ,o.RetlrGroupCode as ctgtypid,
+o.RetlrGroupCode as ctgtypdsc,1 as dlvsts,-1 * (t.PrdTaxAmt) as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,0 salwdsamt,0,@schid,
+t.createddate,@fromdate,@todate,
+--RDR-007
+--isnull(stdnr,0.00),
+--cdgmaster.f_pf_getNR(ISNULL(t.MRP,0), t.salINvdate, r.sapid, p.stateCode,'N'),
+isnull(t.NRValue,0),
+--RDR-007
+'IR',@weekday,Isconfirm,0  
+from test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.SalesReturn as t with(nolock) 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode 
+inner join Lakshya.cdgmaster.customer_retailer_transfer_temp as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode 
+inner join test_LinkedConsoletoRDS2.jandjconsolelive2.dbo.Product as w with(nolock) on t.PrdCode=w.ProductCode 
+inner join Lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid 
+ where (Wholesalercode is not null and Wholesalercode<>'') and (Distributorsapid is not null and Distributorsapid<>'') 
+ and t.SRNDate between @fromdate and @todate 
+ order by t.Distcode,t.SRNDate
+
+
+--controlreport---
+insert into ControlReportKeyWeek(distcode,totalsales,salecount,schid,fromdate,todate,rundate,confirmsales)
+ select Distributorcode,sum(PrdQty*PrdSalerate+PrdTaxAmt),count(prdccode),@schid,@fromdate,@todate,getdate(), confirmsales
+ from Lakshya.cdgmaster.keyweekdata with(nolock)
+ where saleflag='IS' and fromdate=@fromdate and todate=@todate 
+group by Distributorcode,confirmsales--for indirect sales
+
+insert into ControlReportKeyWeek(distcode,totalsales,salecount,schid,fromdate,todate,rundate,confirmsales)
+ select Distributorcode,sum(subTotal4),count(prdccode),@schid,@fromdate,@todate,getdate(), confirmsales
+ from Lakshya.cdgmaster.keyweekdata with(nolock)
+ where saleflag='DS' and fromdate=@fromdate and todate=@todate 
+group by Distributorcode,confirmsales--for direct sales
+
+insert into ControlReportKeyWeek(distcode,totalsales,salecount,schid,fromdate,todate,rundate,confirmsales)
+ select Distributorcode,sum(subTotal4),count(prdccode),@schid,@fromdate,@todate,getdate(), confirmsales
+ from Lakshya.cdgmaster.keyweekdata with(nolock)
+ where saleflag='G2' and fromdate=@fromdate and todate=@todate 
+group by Distributorcode,confirmsales--for sales return
+
+--controlreport---
+---smsdata----
+
+insert into Lakshya.cdgmaster.smsdatareportdetails
+select abicode,musername,sum(a.prdqty*a.prdsalerate+a.prdtaxamt) as totalsales,@schid as schid,@fromdate,@todate from Lakshya.cdgmaster.keyweekdata as a  with(nolock)
+ left join (select distinct sapid,distributorsapid,abicode from Lakshya.cdgmaster.customer_Retailer with(nolock)) as c on  a.distributorcode=c.distributorsapid  left join Lakshya.cdgmaster.sku as b with(nolock) on a.prdccode=b.sapid left join Lakshya.cdgmaster.muser as r with(nolock) on c.abicode=r.musercode where saleflag='IS' and schid=@schid and (abicode is not null and abicode<>0 and abicode<>'')
+group by abicode,musername
+
+insert into Lakshya.cdgmaster.Smsdatareportheader
+select abicode,abiname,sum(totalsales),@schid from Lakshya.cdgmaster.Smsdatareportdetails with(nolock) group by abicode,abiname
+
+----smsdata
+end
+
+
+
+--exec [cdgmaster].[keydataW]
+--select * from  cdgmaster.keyweekdata where distributorcode=''''115025'''' and salinvno=''''TE1006524'''' order by prdccode
+--delete from  Lakshya.cdgmaster.keyweekdata
+--delete from cdgmaster.ControlReportKeyWeek
+--delete from cdgmaster.Keyweekschedulardate
+--select * from  jnjsalesdetails where distcode=''''114746'''' and salinvno=''''TE1006524'''' order by prdcode' 
+---select CONVERT(VARCHAR(10),dateadd(d,2-datepart(dw,convert(datetime,getdate())-7),convert(datetime,getdate())),120)
+---select * from cdgmaster.smsdatareportdetails
+---delete from cdgmaster.smsdatareportdetails
+---select CONVERT(VARCHAR(10),dateadd(d,8-datepart(dw,convert(datetime,getdate())-7),convert(datetime,getdate())),120)
+---select * from Lakshya.cdgmaster.Smsdatareportheader

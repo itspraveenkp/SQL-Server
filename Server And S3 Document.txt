@@ -1,0 +1,48 @@
+Server Access
+
+User Secondary Account:
+
+Admin_oohmsara
+Admin_sselvams
+Admin_aashwins
+Admin_ssaivenk
+Admin_hhemanth
+------------------------------------------------------------------------------------------
+
+ 
+WWID	Name	Company Name	Business Telephone	Email Address
+702303639	Ashwin S, Ashwin S	J&J Consumer India	+91 44 48518860	ashwin.s@positiveintegers.com
+702303637	Hemanth G, Hemanth G	J&J Consumer India	+91 44 48518860	hemanth.g@positiveintegers.com
+702303630	Ohmsaravanan K, Ohmsaravanan K	J&J Consumer India	+91 44 48518860	ohmsaravanan.k@positiveintegers.com
+702303638	Sai Venkatesh S, Sai Venkatesh S	J&J Consumer India	+91 44 48518860	saivenkatesh.s@positiveintegers.com
+702303636	Selvam S, Selvam S	J&J Consumer India	+91 44 48518860	selvam.s@positiveintegers.com
+
+
+awsautsgp1069 ------------- 10.221.32.69
+
+awsautsgp1075-Linux-UAT -- 10.221.32.75
+
+Click-Win-Prod ----------- 10.221.32.76
+
+Lakshya-Windows-UAT ------ 10.221.32.87
+
+MDM-Linux-Prod ----------- 10.221.32.70
+
+TSO-Linux-UAT ------------ 10.221.32.73
+
+
+---------------------------------------------------------------------------------------------
+
+S3 Bucket
+INC000020560766:itx-aut:Need Read Access to S3
+
+Please use following link for raising the request:
+https://jnjprod.service-now.com/jnj_cms/jnj_sid_detail.do?v=1&uri=com.glideapp.servicecatalog_cat_item_view.do%3Fv%3D1%26sysparm_id%3D3f155baa4fa5ae0086afeddf0210c75c%26sysparm_link_parent%3Dcd46d2d00fdb8e4003dd1b9ff2050e85%26sysparm_catalog%3De0d08b13c3330100c8b837659bba8fb4&sysparm_document_key=sc_cat_item,3f155baa4fa5ae0086afeddf0210c75c
+
+
+-----------------------------------------------------------------------------------------------
+
+
+You can refer to following
+https://confluence.jnj.com/display/VAAB/IAM+Group+Permissions+Overview
+

@@ -1,0 +1,35 @@
+For Reference.
+
+select * from cdgmaster.VW_NWClaimList with(nolock) where DistSapId='132741' and Year='2018' order by 1 desc--29755  2018S5-01036
+select IsJEGenerated,SchedulerID,* from cdgmaster.tblNWC_ClaimActivities with(nolock) where ClaimCode='29755'
+
+select IsJEGenerated,SchedulerID,* from cdgmaster.tblNWC_ClaimActivities with(nolock) where SchedulerID='3408'--
+
+select * from cdgmaster.tblNWCJEControlHeader_N (nolock) where schedulerid='3408'
+
+select * from cdgmaster.tblNWCJEControlDetail_N (nolock) where JEConrtolCode='3429'
+
+select * from cdgmaster.tblNWCJE_N (nolock) where schedulerid='3408'
+
+select * from cdgmaster.tblNWC_Claims (nolock) where ClaimCode in 
+('29755','29599')
+
+-------
+select * from cdgmaster.tblNWC_Claims (nolock) where ClaimCode=29755
+select * from cdgmaster.tblNWCJE_N (nolock) where HDrefDoc='2018S5-01036'
+select * from cdgmaster.tblNWCJE_N (nolock) where distcode='132741'
+select IsJEGenerated,SchedulerID,* from cdgmaster.tblNWC_ClaimActivities with(nolock) where SchedulerID='3408' and ClaimCode='29755'
+
+-----------------------------------------
+
+select StateCode,SuppliedBy, * from cdgmaster.customer(nolock) where SAPID='132741'
+
+select * from cdgmaster.State(nolock) where StateCode=31
+
+select * from cdgmaster.Plant(nolock) where PlantCode='2'
+
+-----------------------------------------------------------------
+
+select * from cdgmaster.tblNWC_ClaimActivities with(nolock) where cast(convert(varchar(50),LastUpdatedOn,111)as datetime)
+between '2019-10-27' and '2019-11-23'
+select * from cdgmaster.tblsystemparam(nolock) where paramname like '%nwc%'

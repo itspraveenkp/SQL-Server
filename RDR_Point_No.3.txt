@@ -1,0 +1,104 @@
+declare @fromdate varchar(10) 
+declare @todate varchar(10)
+declare @fromdateDt dateTime 
+declare @todateDt dateTime
+declare @strsql varchar(6000)
+declare @strsqlid varchar(6000)
+declare @custid varchar(10)
+declare @sapid varchar(10)
+declare @rtrid varchar(100)
+declare @schid int
+declare @f varchar(10)
+declare @t varchar(10)
+declare @cfi varchar(1)
+declare @cfd varchar(1)
+declare @Month varchar(2)
+declare @Year varchar(4)
+
+--added on 1 jun 16
+declare @monthkey int,
+        @getyear int,
+	    @getmonth int
+set @monthkey=(select monthKey from cdgmaster.BusinessCalender with(nolock) where salinvdate=
+(select CONVERT(date,salinvdate) as salinvdate from cdgmaster.BusinessCalender with(nolock) where salinvdate=(convert(date,GETDATE()))))
+
+set @getyear=(case when @monthkey=1 then year(GETDATE())-1 else year(GETDATE()) end)
+set @getmonth=(case when @monthkey=1 then 12  else @monthkey-1 end)
+--added on 1 jun 16
+
+if(@Month = 0 or @Year=0)
+Begin
+--added on 1 jun 16
+	set @fromdate=CONVERT(varchar(10),(select MIN(salinvdate) from cdgmaster.BusinessCalender with(nolock) where year=@getyear and monthKey=@getmonth),120)
+	set @todate=CONVERT(varchar(10),(select MAX(salinvdate) from cdgmaster.BusinessCalender with(nolock) where year=@getyear and monthKey=@getmonth),120)
+--added on 1 jun 16
+
+	print '@fromdate '+@fromdate;
+	print '@todate '+@todate;
+End
+else
+
+Begin
+print 'rundate'
+    declare @Rundate datetime
+	set @Rundate=  convert(datetime,@Month+'-01-'+@Year)
+    print(@Rundate)
+	set @fromdate=CONVERT(varchar(10),(select MIN(salinvdate) from cdgmaster.BusinessCalender with(nolock) where  monthKey=(CASE 
+				  WHEN (month(@Rundate))=1 THEN 12 else (month(@Rundate))-1 END) 
+				  and year=(CASE WHEN (MONTH(@Rundate))=1 THEN YEAR(@Rundate)-1 ELSE YEAR(@Rundate) END)),120)
+	            	
+	set @todate=CONVERT(varchar(10),(select Max(salinvdate) from cdgmaster.BusinessCalender with(nolock) where  monthKey=(CASE 
+				  WHEN (month(@Rundate))=1 THEN 12 else (month(@Rundate))-1 END) 
+				  and year=(CASE WHEN (MONTH(@Rundate))=1 THEN YEAR(@Rundate)-1 ELSE YEAR(@Rundate) END)),120)
+
+	print 'from date -'+@fromdate;
+	print 'todate -'+@todate;
+End
+
+select @fromdateDt = convert(dateTime, @fromdate, 120)
+print @fromdateDt;
+select @todateDt = convert(dateTime, @todate, 120)
+	
+	print @todateDt;
+
+--if (convert(varchar(10),convert(datetime,'2010-08-31'),120)=@todate)
+begin
+
+select t.Distcode as Distributorcode, t.SRNRefNo as INVNO,convert(varchar,convert(datetime,t.SRNDate),120) as INVDATE  
+,1 as DLVSTS,t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductId as Prdid,ProductCode as prdCcde  
+,w.ProductName as Prdnm,-1 * (isnull(t.PrdSalQty,0) + isnull(t.PrdUnSalQty,0)) as Salinvqty,t.PrdSelRate as JNJSALINVRATE,W.MotherSKUCode as Prdctgid  
+,W.MOTHERSKUName as PRDCTGDSC ,o.rtrcategorycode as ctgtypid,o.rtrcategorycode as ctgtypdsc,1 as dlvsts  
+,-1 * (t.PrdTaxAmt) as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,0 as salwdsamt,0, @schid, 
+t.createddate ,@fromdate,@todate  
+,isnull(t.NRValue,0),'IR',case Isconfirm when 'C' then 'Y' when 'U' then 'N' else Isconfirm end,0    
+ from jandjconsolelive.dbo.SalesReturn as t with(nolock)   
+inner join jandjconsolelive.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode   
+inner join lakshya.cdgmaster.customer_Retailer as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode   
+inner join jandjconsolelive.dbo.Product_nextlevel as w with(nolock) on t.PrdCode=w.ProductCode   
+inner join lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid   
+ where (Wholesalercode is not null and Wholesalercode<>'')  and p.isActive='Y' 
+and (Distributorsapid is not null and Distributorsapid<>'')   
+and Nkacstores='Y' 
+and t.SRNDate  between  @fromdate and @todate    
+order by t.Distcode,t.SRNRefNo 
+
+
+select t.Distcode as Distributorcode, t.SRNRefNo as INVNO,convert(varchar,convert(datetime,t.SRNDate),120) as INVDATE,  
+1 as DLVSTS,t.rtrcode as RETAILERID,t.RtrName as RTRNM,w.ProductId as Prdid,ProductCode as prdCcde,w.ProductName as Prdnm,-1 * (isnull(t.PrdSalQty,0) + isnull(t.PrdUnSalQty,0)) as Salinvqty,  
+t.PrdTaxAmt as JNJSALINVRATE,W.MotherSKUCode as Prdctgid,W.MOTHERSKUName as PRDCTGDSC ,o.rtrcategorycode as ctgtypid,  
+o.rtrcategorycode as ctgtypdsc,1 as dlvsts,-1 * (t.PrdTaxAmt) as Salinvtax,1 as mnfid,prdschdiscamt,prddbdiscamt,0 as salwdsamt,0,@schid,  
+t.createddate,@fromdate,@todate,  
+isnull(t.NRValue,0),  
+'IR',Isconfirm,0    
+from jandjconsolelive.dbo.SalesReturn as t with(nolock)   
+inner join jandjconsolelive.dbo.retailermaster as o with(nolock) on t.distcode=o.distcode and t.rtrcode=o.rtrcode   
+inner join lakshya.cdgmaster.customer_retailer_transfer_temp as p with(nolock) on t.distcode=p.distributorsapid and t.rtrcode=p.wholesalercode   
+inner join jandjconsolelive.dbo.Product_nextlevel as w with(nolock) on t.PrdCode=w.ProductCode   
+inner join lakshya.cdgmaster.sku  as r with(nolock) on w.productcode=r.sapid   
+ where (Wholesalercode is not null and Wholesalercode<>'') and (Distributorsapid is not null and Distributorsapid<>'')   
+ and t.SRNDate  between @fromdate and @todate   
+ order by t.Distcode,t.SRNDate
+
+
+
+end

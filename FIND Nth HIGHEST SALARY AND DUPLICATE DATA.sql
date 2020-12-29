@@ -1,0 +1,19 @@
+--- How to find nth highest salary in sql
+use UAT
+
+--find 2ND highest salary
+select max(salary) from tblEmployee
+where Salary < (select max(Salary) from tblEmployee)
+
+--FIND HIGHEST NUMBER 1,2,3,4....N SALARY
+SELECT TOP 1 Salary FROM (SELECT DISTINCT TOP 2 SALARY FROM tblEmployee ORDER BY Salary DESC) RESULT ORDER BY Salary
+
+-- FIND DUPLICATE COUNT 
+SELECT NAME, EMAIL, COUNT(*) FROM TBL_DUPLICATE
+GROUP BY NAME, EMAIL
+HAVING COUNT(*) > 1;
+
+
+DELETE FROM TBL_DUPLICATE WHERE ID NOT IN (SELECT MIN(ID) FROM TBL_DUPLICATE GROUP BY NAME)
+
+SELECT * FROM TBL_DUPLICATE 

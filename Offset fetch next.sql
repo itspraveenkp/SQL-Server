@@ -1,0 +1,53 @@
+
+USE UAT
+
+Create table tblProductss
+(
+    Id int primary key identity,
+    Name nvarchar(25),
+    [Description] nvarchar(50),
+    Price int
+)
+Go
+
+DECLARE @START INT 
+SET @START = 1
+
+DECLARE @NAME VARCHAR(25)
+DECLARE @DESCRIPTION VARCHAR(50)
+
+WHILE(@START <= 100)
+	BEGIN
+		SET @NAME = 'PRODUCT -'+LTRIM(@START)
+		SET @DESCRIPTION = 'PRODUCT DESCRIPTION -'+LTRIM(@START)
+		INSERT INTO tblProductss VALUES(@NAME,@DESCRIPTION, @START * 10)
+		SET @START = @START + 1
+	END
+
+SELECT * FROM tblProductss
+
+--OFFSET FETCH Syntax : 
+
+--SELECT * FROM Table_Name
+--ORDER BY Column_List
+--OFFSET Rows_To_Skip ROWS
+--FETCH NEXT Rows_To_Fetch ROWS ONLY
+
+SELECT * FROM tblProductss
+ORDER BY Id
+OFFSET 10 ROWS
+FETCH NEXT 10 ROWS ONLY
+
+CREATE PROC spGetRowsByPageNumberAndSize
+@PAGENUMBER INT,
+@PAGESIZE INT
+AS
+BEGIN
+	SELECT * FROM tblProductss
+	ORDER BY ID
+	OFFSET (@PAGENUMBER -1) * @PAGESIZE ROWS
+	FETCH NEXT @PAGESIZE ROWS ONLY
+END
+
+
+EXECUTE spGetRowsByPageNumberAndSize 10,10

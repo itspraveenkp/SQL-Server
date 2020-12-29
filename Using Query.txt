@@ -1,0 +1,5 @@
+
+select * from cdgmaster.SchedularSchemeDetailReport_N (nolock) where salInvDate between  '2019-06-30' and '2019-07-27'
+
+select * from cdgmaster.SchedularSchemeDetailReport_N (nolock) where salInvDate between '2018-12-30' and '2019-01-26'
+

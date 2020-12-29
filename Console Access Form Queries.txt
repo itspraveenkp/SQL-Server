@@ -1,0 +1,62 @@
+
+use JandJConsoleLive
+
+Select  * into #UserDetails From UserMaster A(Nolock) 
+Select B.* into #UserSalesGeoMapping From #UserDetails A,Tbl_UserSalesGeoMapping B(Nolock)
+where 
+A.Userid=B.UserId  
+
+Select distinct Userid,Usercode,HierMasterlevelid,HierDfnId,HierDfnCode 
+into #SalesMappingcheck
+from #UserSalesGeoMapping where HierTypeId=1
+
+ 
+Alter table #SalesMappingcheck Add DistId Int
+Alter table #SalesMappingcheck Add LevelName Varchar(100)
+
+
+Update  A set A.LevelName=B.SalesMaster_Name 
+From 
+#SalesMappingcheck A,SalesMaster B(Nolock)
+where 
+  A.HierMasterLevelid=B.SalesMaster_Id 
+  
+
+Update  A set A.DistId=B.DistributorId 
+From 
+#SalesMappingcheck A,SalesDetails_PT B(Nolock)
+where 
+  A.HierDfnCode=B.ABICode
+  
+ 
+
+Update  A set A.DistId=B.DistributorId 
+From 
+#SalesMappingcheck A,SalesDetails_PT B(Nolock)
+where 
+A.HierMasterLevelId >0 and A.HierDfnCode=B.RSMCode  
+
+
+
+Update  A set A.DistId=B.DistributorId 
+From 
+#SalesMappingcheck A,SalesDetails_PT B(Nolock)
+where 
+A.HierMasterLevelId >0 and A.HierDfnCode=B.FLMASMCode   
+
+
+Select distinct A.*,B.RSMName as'Region' ,B.FLMASMName as 'Zone',B.ABIName  as  'TerriTory' 
+into #SalesFinaldetails  
+from #SalesMappingcheck A,SalesDetails_PT  B(Nolock),SalesDefinition C(Nolock) where A.DistId=B.DistributorId 
+and A.HierDfnCode=C.SalesDfn_Code 
+
+
+
+Select distinct A.Usercode 'Login Id',B.FirstName,B.LastName,B.Emailid,Case when  B.UserStatus =1 then 'Active' ELSE 'InActive' END AS 'Status',
+B.Address As'WWID',A.Region aS 'Region',A.Zone,A.TerriTory,A.LevelName as'Level' From #SalesFinaldetails A,#UserDetails B(Nolock)
+where 
+A.Userid=B.Userid
+--and  A.TerriTory in ('NAGAON','EM-NADIA')
+--and emailid like '%syadav5@its.jnj.com%'
+and address like '%702060736%'
+order by level 

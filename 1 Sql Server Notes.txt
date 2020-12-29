@@ -1,0 +1,20 @@
+Table,Datatypes etc
+Select Syntax
+DML statement
+DDL statement
+Group by
+order by
+where
+having
+CTE
+Delete & Truncate
+Globle & Temporary hash(#) table
+indexes
+types of indexes
+store procedure
+function
+trigger
+Constrainds
+joins
+
+

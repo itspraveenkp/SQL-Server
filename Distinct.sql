@@ -1,0 +1,1 @@
+Select distinct Name  from test1 --unique Values fatch using distinct defind keyword in sql

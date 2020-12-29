@@ -1,0 +1,34 @@
+select * from lakshya.cdgmaster.tblSystemParam with(nolock) where ParamName like('%rdssm%')
+select * from cdgmaster.VW_NWClaimList with(nolock) where DistSapId='126265' and Year='2018' order by 1 desc
+select IsJEGenerated,SchedulerID,* from cdgmaster.tblNWC_ClaimActivities with(nolock) where SchedulerID='3291'
+
+select * from cdgmaster.tblNWC_Claims (nolock) where ClaimCode=29076
+select * from cdgmaster.tblNWC_ATClaim (nolock) where ClaimCode=29076
+select * from cdgmaster.tblNWC_ClaimActivities (nolock) where ClaimCode=29076
+select top 10 * from cdgmaster.tblNWC_ClaimActivityDetail (nolock) where ActivityDetailName like 'rajeev' --ClaimActivitiesCode='2142'
+select * from cdgmaster.tblNWC_ClaimsApproverDetail (nolock) where ClaimCode=29076
+
+select TerritoryCode,ZoneCode,RegionCode,* from cdgmaster.MUser (nolock) where MUserCode='124745'
+select TerritoryCode,ZoneCode,RegionCode,* from cdgmaster.customer (nolock) where SAPID='132723'
+select * from cdgmaster.State (nolock) where StateCode in ('2','35')--ap---wb
+select * from cdgmaster.Plant (nolock) where PlantCode='13'
+select * from cdgmaster.tblNWC_ServiceMapping (nolock) where FromState='wb' and ToState='ap'
+
+select LastUpdateTime,* from cdgmaster.ATcustomer (nolock) where SAPID='124745'order by VersionNo
+
+select * from cdgmaster.tblNWC_MonthlyTemplate with(nolock) where TemplateYear=2018 and TemplateMonth=9
+select * from cdgmaster.tblNWC_MonthlyTemplateApproverDetail with(nolock) where MonthlyTemplateCode=38
+select * from cdgmaster.tblNWC_ActivityMaster with(nolock) where ActivityBudgetYear=2018 order by 1 desc
+
+
+select top 10 * from cdgmaster.tblNWC_ServiceMapping (nolock)
+select top 10 * from cdgmaster.tblNWC_Tax (nolock)
+
+
+
+----------------rough
+select top 50 * from cdgmaster.State (nolock) where StateName like '%Vijay%'
+
+select IsJEGenerated,SchedulerID,* from cdgmaster.tblNWC_ClaimActivities with(nolock) where ClaimCode='27175'
+
+select * from cdgmaster.MUser (nolock) where MUserCode='285'

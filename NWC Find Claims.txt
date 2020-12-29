@@ -1,0 +1,27 @@
+/****************************************Take Select dump in excel sheet******************************************************************************/
+select ca.*,sfrom.statename,sto.statename
+FROM   cdgmaster.tblnwc_claimactivities ca WITH(nolock) 
+       LEFT JOIN cdgmaster.tblnwc_claims cl WITH(nolock) 
+              ON cl.claimcode = ca.claimcode 
+       LEFT JOIN cdgmaster.tblnwc_monthlytemplate mt WITH(nolock) 
+              ON cl.monthlytemplatecode = mt.monthlytemplatecode 
+       LEFT JOIN cdgmaster.tblnwc_activitymaster am WITH(nolock) 
+              ON am.activitycode = ca.activitycode 
+       LEFT JOIN cdgmaster.customer c WITH(nolock) 
+              ON c.customercode = cl.customercode 
+       LEFT JOIN cdgmaster.plant p WITH(nolock) 
+              ON p.plantcode = c.suppliedby 
+       LEFT JOIN cdgmaster.[state] sfrom WITH(nolock) 
+              ON sfrom.statecode = c.statecode 
+       LEFT JOIN cdgmaster.[state] sto WITH(nolock) 
+              ON sto.statecode = p.statecode 
+       LEFT JOIN cdgmaster.tblnwc_servicemapping sm WITH(nolock) 
+              ON sm.servicecode = am.sac 
+                 AND sm.fromstate = sfrom.sapid 
+                 AND sm.tostate = sto.sapid        
+       LEFT JOIN cdgmaster.tblnwc_debit_tax dt WITH(nolock) 
+              ON dt.dn_taxcode = sm.dn_taxcode 
+
+WHERE  ( ( mt.templatemonth >= 7  AND mt.templateyear >= 2017 ) OR mt.templateyear > 2017 )
+-- and ((ca.dn_s_tax_rate=0 and ca.dn_i_tax_rate=0) or ca.DN_SAP_Tax_Code='')
+and (ca.dn_s_tax_rate IS NULL  OR ca.dn_c_tax_rate IS NULL  OR ca.dn_i_tax_rate IS NULL OR ca.DN_SAP_Tax_Code='null')

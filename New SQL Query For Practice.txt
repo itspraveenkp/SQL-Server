@@ -1,0 +1,637 @@
+
+https://www.c-sharpcorner.com/article/most-asked-sql-queries-in-interview-questions/
+
+http://www.java67.com/2013/04/10-frequently-asked-sql-query-interview-questions-answers-database.html
+
+https://www.edureka.co/blog/interview-questions/sql-interview-questions
+
+
+
+select * from dbo.employee(nolock);
+select * from dbo.department(nolock);
+select * from dbo.salary(nolock);
+
+--............................................................
+--QUE 1
+
+select employee.name, salary.sal,department.dept_name from employee 
+inner join salary
+On employee.emp_id = salary.emp_id 
+
+inner join department
+on employee.dept_id = department.dept_id
+
+where  sal > 25000;
+
+--.............................................................
+--QUE 2
+select top 1 sal from (select distinct top 4 sal from salary order by sal desc)
+result order by sal asc
+
+select max (sal) as "salary" ,employee.name from salary
+inner join employee
+On employee.emp_id = salary.emp_id
+group by employee.name
+
+select employee.name, salary.sal from ..employee inner join ..salary  on
+salary.emp_id=employee.emp_id
+where 
+salary.sal=(select max(salary.sal) from ..salary where salary.sal < (select max(salary.sal) from ..salary))
+
+--......................................................................................................
+--Que 4
+
+select count (*) as count,department.dept_name from department
+inner join employee on employee.dept_id = department.dept_id
+group by department.dept_name
+
+--.......................................................................................................
+
+--QUE 3
+
+select distinct sal "Salary", count (sal) "Count" from salary 
+group by sal
+having COUNT(sal) > 1;
+
+select count(dept_name)"Name" from department
+group by dept_name
+having count(dept_name) > 1
+
+
+select department.dept_id,department.dept_name,employee.name from department,employee
+where department.dept_id > 1
+--group by department.dept_name,employee.name
+--order by employee.name
+--where dept_id > 1
+-------------------------------------------------------------------------------------------------------
+ --Wrong
+
+ select employee.name,department.dept_name from employee
+ inner join department
+ ON employee.emp_id = department.dept_id
+------------------------------------------------
+select employee.name, department.dept_name,department.dept_id from employee
+inner join department
+on department.dept_id = employee.dept_id
+where department.dept_id > 1
+
+-----------------------------------------------------
+
+select count(emp_id) as employeecount, department.dept_name from department
+inner join employee
+on employee.dept_id = department.dept_id
+group by department.dept_name
+
+
+--Q.1 Row Filtering input type store procedure
+
+
+exec sp_MonthYear 11,2019
+
+alter procedure sp_MonthYear
+(
+	@month datetime,
+	@year datetime
+)
+As
+Begin
+	select distinct sum(cast(salary as int)),month(salarydate) as month,YEAR(salarydate) as year ,salarydate
+	 from tblsalary
+	where month(salarydate) = @month and YEAR(salarydate) = @year 
+	group by salary,month(salarydate),YEAR(salarydate),salarydate
+End
+
+
+--Q >.1 Delete Dublicate data from the table
+
+with NewEmployee As
+(
+	select *, ROW_NUMBER() over(partition by Emp_id order by Emp_id) as row
+	from tblNewEmployee 
+)
+Delete from NewEmployee where row <> 1
+
+
+Q.1 BackUP
+
+
+select into Backup_tblemployee from tblNewEmployee
+
+create procedure sp_BKtblemployee
+As
+Begin
+	select * into Backup_tblemployee from tblNewEmployee 
+End
+
+create procedure Sp_backup
+As
+Begin
+declare	@BackupFilename varchar(50),
+@Database varchar(50);
+
+set @Database='BackupEmployee';
+set @BackupFilename='D:\New folder'+ 'BackupEmployee'+'.BAK';
+backup database	@Database to disk =@BackupFilename;
+End
+
+
+
+
+------------------------------------------------------------------------------------------------------------
+
+select e.name,d.dept_id, e.dept_id from employee e
+ left outer join department d
+ On d.dept_id = e.dept_id
+ where d.dept_id is not null
+
+ select e.name,s.salary from tblemployee e
+ inner join tblsalary s
+ on s.sal_id = e.sal_id
+where s.salary = 20000
+
+select * from tblDublicateDate
+
+select d.Emp_id,d.Emp_Name, count(*)
+from tblDublicateDate d
+group by d.Emp_id,d.Emp_Name
+having count(*) > 1
+
+with DublicateData as
+(
+	select *, ROW_NUMBER() over(partition by Emp_id order by Emp_id) as dublicaterow from tblDublicateDate
+)
+select * from DublicateData
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+with DeleteDublicate as
+(
+	select *, ROW_NUMBER() over(partition by Emp_id order by Emp_id) as deublicate from tblDublicateDate
+)
+
+delete from DeleteDublicate
+where Emp_id = 5;
+
+select max(salary) from tblsalary 
+where salary < (select MAX(tblsalary.salary) from tblsalary) 
+
+
+select * from tblsalary s
+where 2 =(select count (distinct s2.salary)
+from tblsalary s2
+where s2.salary > s.salary)
+
+
+select * from tblsalary s
+where 3 = (select count(distinct s2.salary) 
+from tblsalary s2
+where s2.salary > s.salary)
+
+
+select s.salary,s.sal_id from tblsalary s
+where s.sal_id > 7;
+
+2017-10-04   2019-10-05   
+select * from  tblsalary
+
+select distinct salary from  tblsalary 
+where salarydate between '2019-10-05' and '2017-10-05'
+
+
+select * from tblsalary
+where salarydate = '2017-10-05'
+
+
+select sal_id,max(salary) from  tblsalary 
+group by sal_id
+
+
+select  salarydate,salary from tblsalary
+where salary is null or salary <> 45000
+
+
+select salary,salarydate from tblsalary where salarydate = '2017-10-05'
+union all
+select salary,salarydate from tblsalary where  salarydate = '2017-10-05';
+
+
+set rowcount 1
+select * from tblsalary order by salary desc 
+set rowcount 0
+
+
+with newtable as
+(
+	select *, ROW_NUMBER() over(partition by sal_id order by sal_id) as id from tblsalary
+)
+select * from newtable
+where id >1
+
+
+
+select count(*) + count(*)
+
+select ('C#')
+
+
+
+select e.emp_id,e.name from  tblemployee e where name like 'r%'
+
+select e.name from tblemployee e where e.name like '%i%'
+
+
+select * from tblsalary 
+where sal_id %2 = 0
+
+select * from tblsalary
+where sal_id %2 != 0
+
+
+select top 3 * from tblsalary order by sal_id
+
+
+
+select salary, 'check' = case
+
+when salary like '%[0-9]%[^A-Z]%/%[^A-Z]%[0-9]%' then 'NUMBER'
+else
+'NOT NUMBER'
+end
+from tblsalary
+
+
+select * from tblemployee
+inner join tblsalary
+on tblemployee.sal_id = tblsalary.sal_id
+left outer join employee
+on tblsalary.sal_id = employee.emp_id
+
+
+;with PrintNumber as
+(
+	select 1 [SEQUENCE]
+	UNION ALL
+	SELECT [SEQUENCE] + 1 FROM PrintNumber WHERE [SEQUENCE] < 100
+)
+select * from PrintNumber
+
+select $
+
+select select 'ID' -- syntax error
+
+select (select 'ID')
+
+select * from 'tblName' --incorrect syntax
+
+select sum(1+4*5)
+
+select max(1,3,8) -- the max fun requires 1 argument
+
+select max('td')
+
+select max('td' + 'td')
+
+select count('23' + '23' + '23')
+
+select avg(23+34/2)
+
+select 0/0 -- devide by 0 error encountered
+
+select 0/6
+
+select sum(null) -- operand data type null is invalid for sum operator
+
+select count(null) -- operand data type null is invalid for count operator
+
+select avg(null) -- operand data type null is invalid for AVG operator
+
+select min(null)-- operand data type null is invalid for min operator
+
+select max(null)-- operand data type null is invalid for max operator
+
+select null+1
+
+select null+0
+
+
+
+
+
+
+
+
+select max(salary) from tblsalary
+where salary < (select max(salary) from tblsalary)
+
+ 
+ select GETDATE();
+
+ select isdate('01/02/2019') as "dd/mm/yyyy";
+
+ 
+
+ select distinct e.name,e.emp_id from employee e 
+ where emp_id between 3 and 7
+
+ select * from tblNewEmployee
+
+
+ select distinct e.Emp_Name,Address from tblNewEmployee e
+ where JoinDate between '2017-03-25' and '2019-12-18' 
+
+
+ select salary,sal_id from tblsalary
+ where salary >= 45000
+ 
+ select * from tblemployee where name like 'p%' 
+ 
+ select * from tblemployee where upper(name) like 'pooja%' 
+ 
+ select YEAR(salarydate) from tblsalary 
+
+ select year(GETDATE()) as "year";
+
+ with dublicate as
+ (
+	select *, ROW_NUMBER() over(partition by Emp_id order by Emp_id) as dublicate from tblDublicateDate
+ )
+
+ --select * from dublicate;
+ --delete from dublicate where dublicate > 1
+
+ select * from tblDublicateDate d1 
+ where Emp_id = (select MAX(Emp_id) from tblDublicateDate d2
+ where d1.Emp_id = d2.Emp_id);
+
+ 
+ delete from tblDublicateDate 
+ where Emp_id != (select max(Emp_id) from tblDublicateDate p1
+ where tblDublicateDate.Emp_id = tblDublicateDate.Emp_id);
+
+ 
+ select e.name from tblemployee e, tblemployee e1 where e.emp_id = e1.sal_id
+
+ select * from employee where emp_id = 2 and name = 'Arun'
+
+select * from tblsalary where salarydate='2019-11-05'
+
+select *,upper(name) from employee
+
+insert into employee values(9,'Sachin',2)
+
+select distinct name from employee
+
+select substring(name,1,3) from employee
+
+select RTRIM(name) from tblemployee
+
+select LTRIM(name) from tblemployee
+
+select distinct LEN(name) from tblemployee
+
+select REPLACE(name,'s','S') from tblemployee
+
+select concat(Emp_Name, ' ',Address) from tblNewEmployee
+
+
+select * from tblNewEmployee
+
+select * from tblNewEmployee
+where Emp_Name in ('Shyam','Amit')
+
+
+select * from tblNewEmployee
+where Emp_Name not in ('Shyam','Amit')
+
+select * from tblNewEmployee where Emp_Name like '_____h'
+
+select salary from tblsalary where YEAR(salarydate) = 2019 and MONTH(salarydate) = 11 
+
+
+--union use for merge two table data with same order
+--union must have same data type,
+--union keyword remove dublicate data
+--union all is retain dublicate value
+
+select Emp_Name from  tblNewEmployee 
+union 
+select Emp_Name from tblDublicateDate
+
+select Emp_Name from  tblNewEmployee 
+union all
+select Emp_Name from tblDublicateDate
+
+
+--intersect is similar to union but those data are return who is available both table 
+
+select Emp_Name from  tblNewEmployee 
+intersect 
+select Emp_Name from tblDublicateDate
+
+
+select Emp_Name from  tblNewEmployee 
+except -- this is work like minus
+select Emp_Name from tblDublicateDate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+
+https://www.janbasktraining.com/blog/sql-queries-for-practice-questions/
+
+
+https://stackoverflow.com/questions/1771995/calculate-fiscal-year-in-sql-server
+
+
+
+alter procedure GetFinanceYear
+
+ @YearMonth DATETIME
+ --@year datetime
+AS
+BEGIN
+    DECLARE @Answer     INT
+
+    IF ( MONTH(@YearMonth) < 4)
+        SET @Answer = YEAR(@YearMonth) - 1 
+
+    --if( MONTH(@YearMonth) > 3)
+	else
+        SET @Answer = YEAR(@YearMonth) + 1
+ if(MONTH(@YearMonth) < 4)
+    Select concat(@Answer, '-', year(@YearMonth)) as year
+	else
+	Select concat(year(@YearMonth), '-',  @Answer) as year
+End
+
+exec GetFinanceYear '03/02/2022'
+
+---------------------------------------------------------------
+
+select dbo.fn_Simpleintrest(10000, 8, 5)
+
+Create function fn_Simpleintrest 
+(
+	@Deposit int,
+	@Time_in_number_Of_Years int,
+	@intrest_Rate int 
+)
+returns int
+As
+Begin
+Declare  @Deposit_amount int
+set  @Deposit_amount = @Deposit
+
+Declare @Time int
+Set  @Time = @Time_in_number_Of_Years
+
+Declare @Rate int 
+Set @Rate = @intrest_Rate
+
+Declare @SimpleInterest int
+Set @SimpleInterest = @Deposit_amount*@Time*@Rate / 100
+
+return @SimpleInterest
+End
+
+--------------------------------------------------------------------------
+Alter procedure sp_sp_IncreaseS
+
+As
+Begin 
+
+	--if(Select emp_doj from tblIncreaseSalary where DATEDIFF(MONTH, emp_doj, GETDATE())/12 <= 3)	
+	
+	SELECT  emp_name,emp_sal,emp_doj,
+	CASE
+	when DATEDIFF(MONTH, emp_doj, GETDATE())/12 <= 3 then emp_sal + (emp_sal * 12/100)
+	when DATEDIFF(MONTH, emp_doj, GETDATE())/12 >= 3 and  DATEDIFF(MONTH, emp_doj, GETDATE())/12 <= 5 then emp_sal + (emp_sal * 15/100)
+	when DATEDIFF(MONTH, emp_doj, GETDATE())/12 >= 5 and  DATEDIFF(MONTH, emp_doj, GETDATE())/12 < 10 then emp_sal + (emp_sal * 20/100)	
+	When DATEDIFF(MONTH,emp_doj,GETDATE()) / 12 >= 10 then emp_sal + (emp_sal * 5/100)
+	END
+	From tblIncreaseSalary
+	
+End
+
+exec  sp_sp_IncreaseS
+
+
+select * from tblIncreaseSalary
+
+insert into tblIncreaseSalary values (3,'Ashish','02-10-1994','07-20-2011',40000),(4,'Sunil','08-20-1996','09-25-2009',50000),(5,'Naveen','10-05-1989','07-20-2008',100000)
+
+
+-----------------------------------------------------------------------------------------------
+--Q.3
+select dbo.fn_Simpleintrest(10000, 8, 5)
+
+Create function fn_Simpleintrest 
+(
+	@Deposit int,
+	@Time_in_number_Of_Years int,
+	@intrest_Rate int 
+)
+returns int
+As
+Begin
+Declare  @Deposit_amount int
+set  @Deposit_amount = @Deposit
+
+Declare @Time int
+Set  @Time = @Time_in_number_Of_Years
+
+Declare @Rate int 
+Set @Rate = @intrest_Rate
+
+Declare @SimpleInterest int
+Set @SimpleInterest = @Deposit_amount*@Time*@Rate / 100
+
+return @SimpleInterest
+End
+
+
+Select dbo.fn_Simpleintrest(20000, 8, 5)
+
+
+-------------------------------------------------------------------------------------------
+Alter function fn_Sintrest 
+(
+	@Deposit int,
+	@Time_in_number_Of_Years int,
+	@intrest_Rate int,
+	@StartDateToEndDate int
+)
+returns int
+
+As
+Begin
+Declare  @Deposit_amount int
+set  @Deposit_amount = @Deposit
+
+Declare @Time int
+Set  @Time = @Time_in_number_Of_Years
+
+Declare @Rate int 
+Set @Rate = @intrest_Rate
+
+
+Declare @StartEndDate int
+set @StartEndDate= @Time
+
+Declare @EndDate int
+set @EndDate= @Time
+
+Declare @SimpleInterest int
+Set @SimpleInterest = @Deposit_amount*@Time*@Rate / 100 
+
+
+return (@SimpleInterest)
+
+End
+
+	Select dbo.fn_Sintrest(60000, 8, 5,12)
+	Select dbo.fn_Sintrest(2200,6,7,8)
+
+
+SELECT DATEADD(DAY, 2 - DATEPART(Day, GETDATE()), CAST(GETDATE() AS DATE)) Day_Start
+
+
+
+
+
+
+
+
+
+
+
+
+ 

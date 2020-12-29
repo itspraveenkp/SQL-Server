@@ -1,0 +1,9 @@
+-- Lakshya Table
+select * from lakshya.cdgmaster.MRP(nolock) where insertedon>='2019-08-01'
+select * from lakshya.cdgmaster.pricelist(nolock) where insertedon>='2019-08-01'
+select * from lakshya.cdgmaster.PriceListTransConsole(nolock) where FileUploadedon>='2019-08-01'
+
+
+-- Console Table
+select * from jandjconsolelive..e2c_batchmaster(nolock) where createddate>='2019-08-01'
+select * from jandjconsolelive..batchmaster_statewise(nolock) where createddate>='2019-08-01'

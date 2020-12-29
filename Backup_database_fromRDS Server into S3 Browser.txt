@@ -1,0 +1,38 @@
+Grant EXECUTE on msdb.dbo.rds_backup_database to admin_mvasudeo
+Grant EXECUTE on msdb.dbo.rds_restore_database to admin_mvasudeo 
+Grant EXECUTE on msdb.dbo.rds_task_status to admin_mvasudeo 
+Grant EXECUTE on msdb.dbo.rds_cancel_task to admin_mvasudeo
+
+Example Differential Backup without Encryption
+
+use msdb
+exec msdb.dbo.rds_backup_database 
+        @source_db_name='database_name', 
+        @s3_arn_to_backup_to='arn:aws:s3:::bucket_name/file_name_and_extension',
+        @overwrite_S3_backup_file=1,
+        @type='differential';
+
+Example Full Backup with Encryption
+
+use msdb
+exec msdb.dbo.rds_backup_database 
+        @source_db_name='JandJConsoleLive',
+        @s3_arn_to_backup_to='arn:aws:s3:::itx-aut-sqlserverbackupbucket-apse1/Production/RDSJandJConcoleLive26Mar2019.bak',
+        --@kms_master_key_arn='arn:aws:kms:region:account-id:key/key-id',
+        @overwrite_S3_backup_file=1,
+        @type='FULL';
+
+check status of task 
+
+exec msdb.dbo.rds_task_status @task_id=36
+
+to find backup time
+
+select top 1 
+database_name
+, 	backup_start_date
+, 	backup_finish_date 
+from    msdb.dbo.backupset 
+where   database_name='name-of-database'
+and     type = 'D' 
+order by backup_start_date desc;

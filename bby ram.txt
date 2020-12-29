@@ -1,0 +1,7 @@
+
+
+select * from AUDIT_Trace.dbo.view_job_history(nolock) 
+where JobName like 'Move Uploaded Data to  Main Table' order by RunDate desc 
+
+select ApplicationName,DatabaseName,LoginName,ServerName,StartTime,TextData,EndTime,Reads,Writes,RowCounts,Error from Trace_details(nolock)
+where ApplicationName ='Microsoft SQL Server Management Studio - Query' and convert(date,StartTime) between '2019-07-15' and '2019-07-21' 

@@ -1,0 +1,19 @@
+use UAT
+
+SELECT * FROM tblEmployee
+
+
+CREATE FUNCTION FN_EMPLOYEE_GENDER(@GENDER VARCHAR(50))
+RETURNS TABLE
+AS
+RETURN (SELECT Name,Gender,Salary,DepartmentId
+		FROM tblEmployee
+		WHERE Gender = @GENDER)
+
+
+SELECT * FROM  FN_EMPLOYEE_GENDER('MALE')
+
+
+SELECT E.Name,E.Gender,E.Salary,D.DepartmentName FROM FN_EMPLOYEE_GENDER('MALE') E
+JOIN tblDepartment D
+ON E.DepartmentId = D.ID

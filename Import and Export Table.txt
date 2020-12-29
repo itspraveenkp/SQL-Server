@@ -1,0 +1,106 @@
+update ExportConfig set createddt='2019-11-15' where tablename='rdailysales'; -- 2019-07-31 00:32:11	2019-11-21 11:32:00
+
+update ExportConfig set createddt='2019-11-15' where tablename='rproductwisestock'; -- 2019-07-30 00:42:40	2019-11-21 11:34:32
+update ExportConfig set createddt='2019-11-15' where tablename='RSalesreturn'; -- 2019-07-27 00:32:35	2019-11-21 11:33:03
+update ExportConfig set createddt='2019-11-15' where tablename='RDailySales_Undelivered';-- 2019-08-25 00:31:18	2019-11-21 11:33:04
+update ExportConfig set createddt='2019-11-15' where tablename='RSchemeUtilization'; -- 2019-07-30 00:32:50	2019-11-21 11:33:07
+update ExportConfig set createddt='2019-11-15' where tablename='RPurchaseDetail'; -- 2019-08-24 17:19:31	2019-11-21 11:33:33
+update ExportConfig set createddt='2019-11-15' where tablename='RSampleReceiptDetails';
+ -- 
+update ExportConfig set createddt='2019-11-15' where tablename='RMRPStockProcess';
+ -- 2019-08-25 01:26:45	2019-11-21 11:34:06
+update ExportConfig set createddt='2019-11-15' where tablename='RStockDiscrepancy_withproduct';
+ --  2019-10-18 11:49:18	2019-10-25 21:43:05
+update ExportConfig set createddt='2019-11-15' where tablename='RTBL_IDTManagementUpload';
+ -- 2019-08-24 09:01:49	2019-11-21 11:33:39
+update ExportConfig set createddt='2019-11-15' where tablename='rproduct';
+  --2019-09-20 15:13:07	2019-11-16 13:19:21
+update ExportConfig set createddt='2019-11-15' where tablename='rgeohierarchy';
+ -- 2019-10-18 14:03:23	2019-11-22 20:04:02
+update ExportConfig set createddt='2019-11-15' where tablename='rcustomer';
+  -- 2019-10-18 18:58:35	2019-11-22 11:00:00
+update ExportConfig set createddt='2019-11-15' where tablename='rdistributor';
+ -- 
+update ExportConfig set createddt='2019-11-15' where tablename='Rsalesman'; -- 2019-10-18 13:27:01	2019-11-16 13:00:57
+update ExportConfig set createddt='2019-11-15' where tablename='RRoute';
+ -- 2019-10-18 13:27:08	2019-11-16 13:00:57
+update ExportConfig set createddt='2019-11-15' where tablename='RRetailerHierarchy';
+
+ -- 2019-10-01 16:19:15	2019-10-18 13:27:10
+update ExportConfig set createddt='2019-11-15' where tablename='RUDCMaster';
+ -- 
+update ExportConfig set createddt='2019-11-15' where tablename='RUDCDetails';
+ -- 2019-10-01 16:43:30	2019-11-16 13:01:07
+update ExportConfig set createddt='2019-11-15' where tablename='RProducUoM';
+ -- 
+update ExportConfig set createddt='2019-11-15' where tablename='Rschememaster';
+update ExportConfig set createddt='2019-11-15' where tablename='Rschemeproduct'; -- 2019-10-01 19:12:05	2019-11-16 13:19:24
+
+update ExportConfig set createddt='2019-11-15' where tablename='RJCCalander';
+
+
+-- Minimum and Maximam Values --
+
+select 'rcustomer' tablename,min(createddt), max(createddt) from csngjnjreport.rcustomer;
+select 'rcustomerroute' tablename,min(createddt), max(createddt) from csngjnjreport.rcustomerroute;
+select 'rcustomershipaddress' tablename,min(createddt), max(createddt) from csngjnjreport.rcustomershipaddress;
+select 'rdailysales' tablename,min(createddt), max(createddt) from csngjnjreport.rdailysales;
+select 'rdailysales_del' tablename,min(createddt), max(createddt) from csngjnjreport.rdailysales_del;
+select 'rdailysales_undelivered' tablename,min(createddt), max(createddt) from csngjnjreport.rdailysales_undelivered;
+select 'rdailysales_undelivered_del' tablename,min(createddt), max(createddt) from csngjnjreport.rdailysales_undelivered_del;
+select 'rdistributor' tablename,min(createddt), max(createddt) from csngjnjreport.rdistributor;
+select 'rgeohierarchy' tablename,min(createddt), max(createddt) from csngjnjreport.rgeohierarchy;
+select 'rjccalander' tablename,min(createddt), max(createddt) from csngjnjreport.rjccalander;
+select 'rmrpstockprocess' tablename,min(createddt), max(createddt) from csngjnjreport.rmrpstockprocess;
+select 'rmrpstockprocess_del' tablename,min(createddt), max(createddt) from csngjnjreport.rmrpstockprocess_del;
+select 'rorderbooking' tablename,min(createddt), max(createddt) from csngjnjreport.rorderbooking;
+select 'rorderbooking_del' tablename,min(createddt), max(createddt) from csngjnjreport.rorderbooking_del;
+select 'rproduct' tablename,min(createddt), max(createddt) from csngjnjreport.rproduct;
+select 'rproductuom' tablename,min(createddt), max(createddt) from csngjnjreport.rproductuom;
+select 'rproductwisestock' tablename,min(createddt), max(createddt) from csngjnjreport.rproductwisestock;
+select 'rproductwisestock_del' tablename,min(createddt), max(createddt) from csngjnjreport.rproductwisestock_del;
+select 'rpurchasedetail' tablename,min(createddt), max(createddt) from csngjnjreport.rpurchasedetail;
+select 'rpurchasedetail_del' tablename,min(createddt), max(createddt) from csngjnjreport.rpurchasedetail_del;
+select 'rrdssmmonthlytarget' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmmonthlytarget;
+select 'rrdssmmonthlytarget_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmmonthlytarget_del;
+select 'rrdssmmonthlytarget_output' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmmonthlytarget_output;
+select 'rrdssmmonthlytarget_output_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmmonthlytarget_output_del;
+select 'rrdssmweeklytarget' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytarget;
+select 'rrdssmweeklytarget_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytarget_del;
+select 'rrdssmweeklytarget_output' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytarget_output;
+select 'rrdssmweeklytarget_output_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytarget_output_del;
+select 'rrdssmweeklytargetparameter' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytargetparameter;
+select 'rrdssmweeklytargetparameter_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytargetparameter_del;
+select 'rrdssmweeklytargetparameter_output' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytargetparameter_output;
+select 'rrdssmweeklytargetparameter_output_del' tablename,min(createddt), max(createddt) from csngjnjreport.rrdssmweeklytargetparameter_output_del;
+select 'rretailerhierarchy' tablename,min(createddt), max(createddt) from csngjnjreport.rretailerhierarchy;
+select 'rroute' tablename,min(createddt), max(createddt) from csngjnjreport.rroute;
+select 'rsaleshierarchy' tablename,min(createddt), max(createddt) from csngjnjreport.rsaleshierarchy;
+select 'rsalesinvoiceorders' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesinvoiceorders;
+select 'rsalesinvoiceorders_del' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesinvoiceorders_del;
+select 'rsalesman' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesman;
+select 'rsalesmanroute' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesmanroute;
+select 'rsalesreturn' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesreturn;
+select 'rsalesreturn_del' tablename,min(createddt), max(createddt) from csngjnjreport.rsalesreturn_del;
+select 'rsamplereceiptdetail' tablename,min(createddt), max(createddt) from csngjnjreport.rsamplereceiptdetail;
+select 'rsamplereceiptdetail_del' tablename,min(createddt), max(createddt) from csngjnjreport.rsamplereceiptdetail_del;
+select 'rschemecustomer' tablename,min(createddt), max(createddt) from csngjnjreport.rschemecustomer;
+select 'rschemedistributor' tablename,min(createddt), max(createddt) from csngjnjreport.rschemedistributor;
+select 'rschememaster' tablename,min(createddt), max(createddt) from csngjnjreport.rschememaster;
+select 'rschemeproduct' tablename,min(createddt), max(createddt) from csngjnjreport.rschemeproduct;
+select 'rschemeproductcategory' tablename,min(createddt), max(createddt) from csngjnjreport.rschemeproductcategory;
+select 'rschemereatilercategory' tablename,min(createddt), max(createddt) from csngjnjreport.rschemereatilercategory;
+select 'rschemeslab' tablename,min(createddt), max(createddt) from csngjnjreport.rschemeslab;
+select 'rschemeutilization' tablename,min(createddt), max(createddt) from csngjnjreport.rschemeutilization;
+select 'rschemeutilization_del' tablename,min(createddt), max(createddt) from csngjnjreport.rschemeutilization_del;
+select 'rstockdiscrepancy_withproduct' tablename,min(createddt), max(createddt) from csngjnjreport.rstockdiscrepancy_withproduct;
+select 'rstockdiscrepancy_withproduct_del' tablename,min(createddt), max(createddt) from csngjnjreport.rstockdiscrepancy_withproduct_del;
+select 'rsupplier' tablename,min(createddt), max(createddt) from csngjnjreport.rsupplier;
+select 'rtbl_idtmanagementupload' tablename,min(createddt), max(createddt) from csngjnjreport.rtbl_idtmanagementupload;
+select 'rtbl_idtmanagementupload_del' tablename,min(createddt), max(createddt) from csngjnjreport.rtbl_idtmanagementupload_del;
+select 'rudcdetails' tablename,min(createddt), max(createddt) from csngjnjreport.rudcdetails;
+select 'rudcmaster' tablename,min(createddt), max(createddt) from csngjnjreport.rudcmaster;
+select 'vw_rcustomer' tablename,min(createddt), max(createddt) from csngjnjreport.vw_rcustomer;
+select 'vw_rcustomerroute' tablename,min(createddt), max(createddt) from csngjnjreport.vw_rcustomerroute;
+select 'vw_rsalesmanmaster' tablename,min(createddt), max(createddt) from csngjnjreport.vw_rsalesmanmaster;
+select 'vw_rschememaster' tablename,min(createddt), max(createddt) from csngjnjreport.vw_rschememaster;
